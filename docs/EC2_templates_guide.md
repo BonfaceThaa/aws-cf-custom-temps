@@ -1,9 +1,73 @@
 # AWS CloudFormation reference
+## EC2 Instance overview
+### template
+`
+Type: AWS::EC2::Instance
+Properties: 
+  AdditionalInfo: String
+  Affinity: String
+  AvailabilityZone: String
+  BlockDeviceMappings: 
+    - BlockDeviceMapping
+  CpuOptions: 
+    CpuOptions
+  CreditSpecification: 
+    CreditSpecification
+  DisableApiTermination: Boolean
+  EbsOptimized: Boolean
+  ElasticGpuSpecifications: 
+    - ElasticGpuSpecification
+  ElasticInferenceAccelerators: 
+    - ElasticInferenceAccelerator
+  HibernationOptions: 
+    HibernationOptions
+  HostId: String
+  HostResourceGroupArn: String
+  IamInstanceProfile: String
+  ImageId: String
+  InstanceInitiatedShutdownBehavior: String
+  InstanceType: String
+  Ipv6AddressCount: Integer
+  Ipv6Addresses: 
+    - InstanceIpv6Address
+  KernelId: String
+  KeyName: String
+  LaunchTemplate: 
+    LaunchTemplateSpecification
+  LicenseSpecifications: 
+    - LicenseSpecification
+  Monitoring: Boolean
+  NetworkInterfaces: 
+    - NetworkInterface
+  PlacementGroupName: String
+  PrivateIpAddress: String
+  RamdiskId: String
+  SecurityGroupIds: 
+    - String
+  SecurityGroups: 
+    - String
+  SourceDestCheck: Boolean
+  SsmAssociations: 
+    - SsmAssociation
+  SubnetId: String
+  Tags: 
+    - Tag
+  Tenancy: String
+  UserData: String
+  Volumes: 
+    - Volume
+`
+
+### Properties
+|Property name       |Description                                                     |
+|--------------------|:--------------------------------------------------------------:|
+TODO
 
 ## Specifying a security group for an Instance
   
 `aws cloudformation create-stack --stack-name EC2test --template-body file://EC2_instance_with_security_group.ymal --parameters ParameterKey=KeyName,ParameterValue=MyKeyPair`
 
+### Template
 `
 Type: AWS::EC2::SecurityGroup
 Properties: 
@@ -17,15 +81,36 @@ Properties:
     - Tag
   VpcId: String
 `
+
 ### Properties
-|Property name |Description                                |
-|--------------|:-----------------------------------------:|
-|GroupDescription|A description for the security group.|
-|GroupName|The name of the security group           |
-|SecurityGroupEgress|The outbound rules associated with the security group.(VPC Only)|
-|SecurityGroupIngress|The inbound rules associated with the security group.|
-|Tags|Any tags assigned to the security group|
-|VpcId|The ID of the VPC for the security group.(VPC only)|
+|Property name       |Description                                                     |
+|--------------------|:--------------------------------------------------------------:|
+|GroupDescription    |A description for the security group.                           |
+|GroupName           |The name of the security group                                  |
+|SecurityGroupEgress |The outbound rules associated with the security group.(VPC Only)|
+|SecurityGroupIngress|The inbound rules associated with the security group.           |
+|Tags                |Any tags assigned to the security group                         | 
+|VpcId               |The ID of the VPC for the security group.(VPC only)             |
+
+## Example
+`
+InstanceSecurityGroup:
+  Type: AWS::EC2::SecurityGroup
+  Properties:
+      GroupDescription: Allow http to client host
+      VpcId:
+         Ref: myVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+`
 
 ## Allocating an Amazon EC2 Elastic IP Using AWS::EC2::EIP
 Specifies an Elastic IP (EIP) address and can, optionally, associate it with an Amazon EC2 instance.
@@ -41,7 +126,7 @@ Properties:
   Tags: 
     - Tag
 `
-### properties
+### Properties
 
 |Property name |Description                                |
 |--------------|:-----------------------------------------:|
@@ -58,6 +143,33 @@ MyEIP:
     InstanceId: !Ref Logical name of an AWS::EC2::Instance resource
 `
 
+## Creating an EC2 instance with emphemeral drive
+Creates an Amazon EC2 instance with an ephemeral drive by using a block device mapping.
+
+`aws cloudformation create-stack --stack-name test2ec2 --template-body file://EC2_instance_with_security_group_and_ElasticIP.yaml --parameters ParameterKey=KeyName,ParameterValue=MyKeyPair`
+
+## Create an EC2 instance with EBS Block Device Mapping
+
+### Example
+`
+ MyEC2Instance: 
+    Type: AWS::EC2::Instance
+    Properties: 
+      ImageId: "ami-79fd7eee"
+      KeyName: "testkey"
+      BlockDeviceMappings: 
+      - DeviceName: "/dev/sdm"
+        Ebs: 
+          VolumeType: "io1"
+          Iops: "200"
+          DeleteOnTermination: "false"
+          VolumeSize: "20"
+      - DeviceName: "/dev/sdk"
+        NoDevice: {}
+`
+
 ### References
 * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-eip.html
 * https://docs.aws.amazon.com/cli/latest/reference/cloudformation/create-stack.html
+* https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-instance.html
+* https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html
