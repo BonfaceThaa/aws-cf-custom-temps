@@ -61,7 +61,11 @@ Properties:
 ### Properties
 |Property name       |Description                                                     |
 |--------------------|:--------------------------------------------------------------:|
-TODO
+|ImageId             |The ID of the AMI.                                              |
+|InstanceType        |The instance type.                                              |
+|KeyName             |The name of the key pair.                                       |
+|NetworkInterfaces   |The network interfaces to associate with the instance.          |
+
 
 ## Specifying a security group for an Instance
   
