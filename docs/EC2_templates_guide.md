@@ -1,7 +1,7 @@
 # AWS CloudFormation reference
 ## EC2 Instance overview
 ### template
-```ymal
+```yaml
 Type: AWS::EC2::Instance
 Properties: 
   AdditionalInfo: String
@@ -72,7 +72,7 @@ Properties:
 `aws cloudformation create-stack --stack-name EC2test --template-body file://EC2_instance_with_security_group.ymal --parameters ParameterKey=KeyName,ParameterValue=MyKeyPair`
 
 ### Template
-```ymal
+```yaml
 Type: AWS::EC2::SecurityGroup
 Properties: 
   GroupDescription: String
@@ -97,7 +97,7 @@ Properties:
 |VpcId               |The ID of the VPC for the security group.(VPC only)             |
 
 ## Example
-```ymal
+```yaml
 InstanceSecurityGroup:
   Type: AWS::EC2::SecurityGroup
   Properties:
@@ -121,7 +121,7 @@ Specifies an Elastic IP (EIP) address and can, optionally, associate it with an 
 
 `aws cloudformation create-stack --stack-name test2ec2 --template-body file://EC2_instance_with_security_group_and_ElasticIP.yaml --parameters ParameterKey=InstanceType,ParameterValue=t2.micro ParameterKey=KeyName,ParameterValue=MyKeyPair`
 
-```ymal
+```yaml
 Type: AWS::EC2::EIP
 Properties: 
   Domain: String
