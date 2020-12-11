@@ -4,7 +4,6 @@ Resources:
   S3Bucket:
     Type: 'AWS::S3::Bucket'
     Properties:
-      # permissions where owner has full control and others haev read access
       AccessControl: PublicRead
 Outputs:
   BucketName:
