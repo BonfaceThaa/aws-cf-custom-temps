@@ -120,6 +120,7 @@ InstanceSecurityGroup:
 ```
 
 ## 2. Allocating an Amazon EC2 Elastic IP Using AWS::EC2::EIP
+
 Specifies an Elastic IP (EIP) address and can, optionally, associate it with an Amazon EC2 instance.
 
 `aws cloudformation create-stack --stack-name test2ec2 --template-body file://EC2_instance_with_security_group_and_ElasticIP.yaml --parameters ParameterKey=InstanceType,ParameterValue=t2.micro ParameterKey=KeyName,ParameterValue=MyKeyPair`
@@ -134,6 +135,7 @@ Properties:
   Tags: 
     - Tag
 ```
+
 ### Properties
 
 |Property name |Description                                |
@@ -152,6 +154,7 @@ MyEIP:
 ```
 
 ## 3. Creating an EC2 instance with emphemeral drive
+
 Creates an Amazon EC2 instance with an ephemeral drive by using a block device mapping.
 
 `aws cloudformation create-stack --stack-name test2ec2 --template-body file://EC2_instance_with_security_group_and_ElasticIP.yaml --parameters ParameterKey=KeyName,ParameterValue=MyKeyPair`
@@ -173,9 +176,11 @@ Creates an Amazon EC2 instance with an ephemeral drive by using a block device m
       - DeviceName: "/dev/sdk"
         NoDevice: {}
 ```
+
 ## 4. Create an EC2 instance with EBS Block Device Mapping
 
 ## Volume
+
 Specifies an Amazon Elastic Block Store (Amazon EBS) volume
 
 ### Template
@@ -204,6 +209,7 @@ Properties:
 |VolumeType       |The volume type                                     |
 
 ## VolumeAttachment
+
 Attaches an Amazon EBS volume to a running instance and exposes it to the instance with the specified device name.
 
 ### Template
@@ -214,6 +220,7 @@ Properties:
   InstanceId: String
   VolumeId: String
 ```
+
 ## Properties
 |Property name|Description                                         |
 |-------------|:---------------------------------------------------|

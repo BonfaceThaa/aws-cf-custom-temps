@@ -2,6 +2,7 @@
 This guide illustrates creating S3 resource with various resources, mappings and ouputs using AWS CloudFormation Using aws cli
 
 ## S3 overview
+
 ### Template
 ```yaml
 Type: AWS::S3::Bucket
@@ -53,10 +54,11 @@ Properties:
 |BucketName          |A name for the bucket.                                        |
 
 ## Return values
-* Ref
+
+### Ref
 Passing the logical ID, Ref will return bucketname
  
-* Fn::GetAtt
+### Fn::GetAtt
 Returns these attributes: Arn, DomainName, DualStockName, RegionalDomainName, WebsiteURL
 
 ## Creating AWS S3 bucket with a deletion policy
@@ -65,7 +67,9 @@ Returns these attributes: Arn, DomainName, DualStockName, RegionalDomainName, We
 
 TODO
 ## Create S3 website
+
 `aws cloudformation create-stack --stack-name testS3 --template-body file://`
+
 ## Associate a replication configuration IAM role with an S3 bucket
 ## Configure a static website with a routing rule
 ## Enable cross-origin resource sharing

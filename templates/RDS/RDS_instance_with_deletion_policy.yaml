@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS CloudFormation Sample Template RDS_Snapshot_On_Delete.
+Resources:
+  MyDB:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: MyDatabase
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t2.small
+      Engine: MySQL
+      MasterUsername: myName
+      MasterUserPassword: myPassword
+    DeletionPolicy: Snapshot
+Outputs:
+  JDBCConnectionString:
+    Description: JDBC connection string for the database
+    Value: !Join 
+      - ''
+      - - 'jdbc:mysql://'
+        - !GetAtt 
+          - MyDB
+          - Endpoint.Address
+        - ':'
+        - !GetAtt 
+          - MyDB
+          - Endpoint.Port
+        - /MyDatabase

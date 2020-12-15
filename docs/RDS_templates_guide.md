@@ -2,6 +2,7 @@
 This guide illustrates creating RDS resource with various resources, mappings and ouputs using AWS CloudFormation Using aws cli
 
 ## RDS overview
+
 ### Template
 ```yaml
 Type: AWS::RDS::DBInstance
@@ -82,6 +83,7 @@ Properties:
 |DBParameterGroupName|The name of an existing DB parameter group or a reference to an AWS::RDS::DBParameterGroup resource created in the template.|
 
 ## Return values
+
 ### Ref
 When you pass the logical ID of this resource to the intrinsic Ref function, Ref returns the DB instance name.
 
@@ -137,7 +139,6 @@ Resources:
 `aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_instance_with_read_replica.yaml --parameters ParameterKey=DBUser,ParameterValue=boneye ParameterKey=DBPassword,ParameterValue=boneye1234`
 
 ### Template
-
 ```yaml
 Type: AWS::RDS::DBSecurityGroup
 Properties: 
@@ -158,7 +159,6 @@ Properties:
 |GroupDescription      |Provides the description of the DB security group.   |
 
 ### Example
-
 ```yaml
 AWSTemplateFormatVersion: 2010-09-09
 Description: Sample template showing how to create a highly-available, RDS DBInstance with a read replica.
@@ -339,6 +339,41 @@ Outputs:
           - Endpoint.Port
         - /
         - !Ref DBName
+```
+## 3. Create RDS DB instance with a deletion policy
+Creates an Amazon RDS database instance with a deletion policy that specifies Amazon RDS to take a snapshot of the database before deleting it.
+
+`aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_Instance_with_deletion_policy.yaml --parameters ParameterKey=DBUser,ParameterValue=boneye ParameterKey=DBPassword,ParameterValue=boneye1234`
+
+### Example
+```yaml
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS CloudFormation Sample Template RDS_Snapshot_On_Delete.
+Resources:
+  MyDB:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: MyDatabase
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t2.small
+      Engine: MySQL
+      MasterUsername: myName
+      MasterUserPassword: myPassword
+    DeletionPolicy: Snapshot
+Outputs:
+  JDBCConnectionString:
+    Description: JDBC connection string for the database
+    Value: !Join 
+      - ''
+      - - 'jdbc:mysql://'
+        - !GetAtt 
+          - MyDB
+          - Endpoint.Address
+        - ':'
+        - !GetAtt 
+          - MyDB
+          - Endpoint.Port
+        - /MyDatabase
 ```
 
 ## References
