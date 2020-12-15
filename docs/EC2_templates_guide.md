@@ -62,7 +62,7 @@ Properties:
 
 ### Properties
 |Property name       |Description                                                     |
-|--------------------|:--------------------------------------------------------------:|
+|--------------------|----------------------------------------------------------------|
 |ImageId             |The ID of the AMI.                                              |
 |InstanceType        |The instance type.                                              |
 |KeyName             |The name of the key pair.                                       |
@@ -91,7 +91,7 @@ Properties:
 
 ### Properties
 |Property name       |Description                                                     |
-|--------------------|:--------------------------------------------------------------:|
+|--------------------|----------------------------------------------------------------|
 |GroupDescription    |A description for the security group.                           |
 |GroupName           |The name of the security group                                  |
 |SecurityGroupEgress |The outbound rules associated with the security group.(VPC Only)|
@@ -139,7 +139,7 @@ Properties:
 ### Properties
 
 |Property name |Description                                |
-|--------------|:-----------------------------------------:|
+|--------------|-------------------------------------------|
 |Domain        |Indicates resource linked(VPC/EC2 Instance)|
 |InstanceId    |ID of the instance                         |
 |PublicIpv4Pool|ID of address pool                         |
@@ -203,7 +203,7 @@ Properties:
 
 ### Properties
 |Property name    |Description                                         |
-|-----------------|:---------------------------------------------------|
+|-----------------|----------------------------------------------------|
 |Availability zone|The Availability Zone in which to create the volume.|
 |Size             |The size of the volume, in GiBs                     |
 |VolumeType       |The volume type                                     |
@@ -223,7 +223,7 @@ Properties:
 
 ## Properties
 |Property name|Description                                         |
-|-------------|:---------------------------------------------------|
+|-------------|----------------------------------------------------|
 |Device       |The device name (for example, /dev/sdh or xvdh).    |
 |InstanceId   |The ID of the instance to which the volume attaches.|
 |VolumeId     |The ID of the Amazon EBS volume.                    |

@@ -47,8 +47,8 @@ Properties:
 ```
 
 ### Properties
-|Property name|Description|
-|--------------------|-------------------------------------------------------------:|
+|Property name       |Description                                                   |
+|--------------------|--------------------------------------------------------------|
 |AccessControl       |A canned ACL that grants predefined permissions to the bucket.|
 |WebsiteConfiguration|Information used to configure the bucket as a static website. |
 |BucketName          |A name for the bucket.                                        |
@@ -70,15 +70,14 @@ TODO
 
 `aws cloudformation create-stack --stack-name testS3 --template-body file://`
 
-## Associate a replication configuration IAM role with an S3 bucket
-## Configure a static website with a routing rule
-## Enable cross-origin resource sharing
-## Manage the lifecycle for S3 objects
-## Log access requests for a specific S3 bucket
-## Receive S3 bucket notifications to an SNS topic
-## Replicate objects and store them in another S3 bucket
-## Specify analytics and inventory configurations for an S3 bucket
+## * Associate a replication configuration IAM role with an S3 bucket
+## * Configure a static website with a routing rule
+## * Enable cross-origin resource sharing
+## * Manage the lifecycle for S3 objects
+## * Log access requests for a specific S3 bucket
+## * Receive S3 bucket notifications to an SNS topic
+## * Replicate objects and store them in another S3 bucket
+## * Specify analytics and inventory configurations for an S3 bucket
 
 ## Resources
 * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/sample-templates-services-ap-south-1.html
-* Pubicly_Accessible_S3_deletion_policy.ymal --parameters ParameterKey=S3Bucket,ParameterValue="testS3"Pubicly_Accessible_S3_deletion_policy.ymal --parameters ParameterKey=S3Bucket,ParameterValue="testS3

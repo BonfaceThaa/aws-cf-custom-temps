@@ -69,7 +69,7 @@ Properties:
 
 ### Properties
 |Property name       |Description                                                                              |
-|--------------------|----------------------------------------------------------------------------------------:|
+|--------------------|-----------------------------------------------------------------------------------------|
 |AllocatedStorage    |The amount of storage (in gigabytes) to be initially allocated for the database instance.|
 |DBInstanceClass     |The compute and memory capacity of the DB instance.                                      |
 |Engine              |The name of the database engine that you want to use for this DB instance.               |
@@ -152,8 +152,8 @@ Properties:
 
 ### Properties
 
-|Property name       |Description                                            |
-|----------------------|----------------------------------------------------:|
+|Property name         |Description                                          |
+|----------------------|-----------------------------------------------------|
 |DBSecurityGroupIngress|Ingress rules to be applied to the DB security group.|
 |EC2VpcId              |The identifier of an Amazon VPC.                     |
 |GroupDescription      |Provides the description of the DB security group.   |
@@ -375,6 +375,101 @@ Outputs:
           - Endpoint.Port
         - /MyDatabase
 ```
+
+## 4. Create RDS DB instance with a database parameter group
+Creates an Amazon RDS database instance with a database parameter group.
+
+`aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_instance_with_db_parameter_group.yaml --parameters ParameterKey=DBUser,ParameterValue=boneye ParameterKey=DBPassword,ParameterValue=boneye1234`
+
+### Template
+``
+Type: AWS::RDS::DBParameterGroup
+Properties: 
+  Description: String
+  Family: String
+  Parameters: 
+    Key : Value
+  Tags: 
+    - Tag
+
+### Properties
+|Property name         |Description                                                             |
+|----------------------|------------------------------------------------------------------------|
+|Description           |Provides the customer-specified description for this DB parameter group.|
+|Family                |The DB parameter group family name.                                     |
+|Paremeters            |An array of parameter names and values for the parameter update.        |
+
+## Example
+```ymal
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS CloudFormation Sample Template RDS_with_DBParameterGroup.
+Parameters:
+  DBName:
+    Default: MyDatabase
+    Description: The database name
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBUser:
+    NoEcho: 'true'
+    Description: The database admin account username
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBPassword:
+    NoEcho: 'true'
+    Description: The database admin account password
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+Resources:
+  MyDB:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBName: !Ref DBName
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t2.small
+      Engine: MySQL
+      EngineVersion: 5.6.19
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Ref DBPassword
+      DBParameterGroupName: !Ref MyRDSParamGroup
+  MyRDSParamGroup:
+    Type: 'AWS::RDS::DBParameterGroup'
+    Properties:
+      Family: MySQL5.6
+      Description: CloudFormation Sample Database Parameter Group
+      Parameters:
+        autocommit: '1'
+        general_log: '1'
+        old_passwords: '0'
+Outputs:
+  JDBCConnectionString:
+    Description: JDBC connection string for the database
+    Value: !Join 
+      - ''
+      - - 'jdbc:mysql://'
+        - !GetAtt 
+          - MyDB
+          - Endpoint.Address
+        - ':'
+        - !GetAtt 
+          - MyDB
+          - Endpoint.Port
+        - /
+        - !Ref DBName
+```
+
+## Return values
+
+### Ref
+When you pass the logical ID of this resource to the intrinsic Ref function, Ref returns the name of the DB parameter group.
 
 ## References
 * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/sample-templates-services-ap-south-1.html#w2ab1c35c30c13c25
