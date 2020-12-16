@@ -99,7 +99,7 @@ The port number on which the database accepts connections.
 ## 1. Create RDS instance with provisioned IOPS
 Showing how to create an Amazon RDS Database Instance with provisioned IOPs.
 
-`aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_Instance_with_IOPS.yaml --parameters ParameterKey=DBUser,ParameterValue=boneye ParameterKey=DBPassword,ParameterValue=boneye1234`
+`aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_Instance_with_IOPS.yaml --parameters ParameterKey=DBUser,ParameterValue={user} ParameterKey=DBPassword,ParameterValue={password}`
 
 ### Example
 ```yaml
@@ -136,7 +136,7 @@ Resources:
 
 ## 2. Create RDS DB instance with a read replica
 
-`aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_instance_with_read_replica.yaml --parameters ParameterKey=DBUser,ParameterValue=boneye ParameterKey=DBPassword,ParameterValue=boneye1234`
+`aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_instance_with_read_replica.yaml --parameters ParameterKey=DBUser,ParameterValue={user} ParameterKey=DBPassword,ParameterValue={password}`
 
 ### Template
 ```yaml
@@ -343,7 +343,7 @@ Outputs:
 ## 3. Create RDS DB instance with a deletion policy
 Creates an Amazon RDS database instance with a deletion policy that specifies Amazon RDS to take a snapshot of the database before deleting it.
 
-`aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_Instance_with_deletion_policy.yaml --parameters ParameterKey=DBUser,ParameterValue=boneye ParameterKey=DBPassword,ParameterValue=boneye1234`
+`aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_Instance_with_deletion_policy.yaml --parameters ParameterKey=DBUser,ParameterValue={user} ParameterKey=DBPassword,ParameterValue={password}`
 
 ### Example
 ```yaml
@@ -379,7 +379,7 @@ Outputs:
 ## 4. Create RDS DB instance with a database parameter group
 Creates an Amazon RDS database instance with a database parameter group.
 
-`aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_instance_with_db_parameter_group.yaml --parameters ParameterKey=DBUser,ParameterValue=boneye ParameterKey=DBPassword,ParameterValue=boneye1234`
+`aws cloudformation create-stack --stack-name Dbtest1 --template-body file://RDS_instance_with_db_parameter_group.yaml --parameters ParameterKey=DBUser,ParameterValue={user} ParameterKey=DBPassword,ParameterValue={password}`
 
 ### Template
 ``
@@ -400,7 +400,7 @@ Properties:
 |Paremeters            |An array of parameter names and values for the parameter update.        |
 
 ## Example
-```ymal
+```yaml
 AWSTemplateFormatVersion: 2010-09-09
 Description: AWS CloudFormation Sample Template RDS_with_DBParameterGroup.
 Parameters:
