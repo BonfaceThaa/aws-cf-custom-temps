@@ -38,14 +38,69 @@ The Fn::GetAtt intrinsic function returns a value for a specified attribute of t
 
 `aws cloudformation create-stack --stack-name ec2vpc5 --template-body file://EC2_instance_with_VPC.yaml --parameters ParameterKey=KeyName,ParameterValue=MyKeyPair  ParameterKey=VpcId,ParameterValue=vpc-400cf03d ParameterKey=SubnetId,ParameterValue=subnet-efc06cb0 ParameterKey=PrimaryIPAddress,ParameterValue=172.31.32.8 ParameterKey=SecondaryIPAddress,ParameterValue=172.31.32.9`
 
-
+### Example
+Access a complete cloudformation template [here](../templates/EC2/EC2_instance_with_VPC.yaml)
 
 ## 2. Create EC2 instance with multiple dynamic IP addresses in an Amazon VPC
 
 `aws cloudformation create-stack --stack-name ec2vpc42 --template-body file://EC2_instance_with_VPC_dynamic_IPS.yaml --parameters ParameterKey=KeyName,ParameterValue=MyKeyPair  ParameterKey=VpcId,ParameterValue=vpc-400cf03d ParameterKey=SubnetId,ParameterValue=subnet-997a09d4 ParameterKey=SecondaryIPAddressCount,ParameterValue=1` 
 
+## EIPAssociation Overview
+Associates an Elastic IP address with an instance or a network interface. 
+
+### Template
+```yaml
+Type: AWS::EC2::EIPAssociation
+Properties: 
+  AllocationId: String
+  EIP: String
+  InstanceId: String
+  NetworkInterfaceId: String
+  PrivateIpAddress: String
+```
+
+### Properties
+|Properties|Description|
+|------------------|----------------------------------------------------------|
+|AllocationId      |[EC2-VPC] The allocation ID. This is required for EC2-VPC.|
+|NetworkInterfaceId|[EC2-VPC] The ID of the network interface.                |
+|PrivateIpAddress  |[EC2-VPC] The primary or secondary private IP address to associate with the Elastic IP address.|
+
+### Return values
+#### Ref
+When you pass the logical ID of this resource to the intrinsic Ref function, Ref returns the resource name.
+
+## NetworkInterface overview
+
+### Template
+```yaml
+Type: AWS::EC2::NetworkInterface
+Properties: 
+  Description: String
+  GroupSet: 
+    - String
+  InterfaceType: String
+  Ipv6AddressCount: Integer
+  Ipv6Addresses: 
+    - InstanceIpv6Address
+  PrivateIpAddress: String
+  PrivateIpAddresses: 
+    - PrivateIpAddressSpecification
+  SecondaryPrivateIpAddressCount: Integer
+  SourceDestCheck: Boolean
+  SubnetId: String
+  Tags: 
+    - Tag
+```
+
+### Properties
+|Properties|Description|
+|-----------|----------|
+|GroupSet|A list of security group IDs associated with this network interface.|
+|SourceDestCheck|Indicates whether traffic to or from the instance is validated.|
+  
 ### Example
-Refer to EC2_instance_with_VPC_dynamic_IPS.yaml
+Access a complete cloudformation template [here](../templates/EC2/EC2_instance_with_VPC_dynamic_IPS.yaml)
 
 ## 3. Create publicly accessible EC2 instance with Auto Scaling group
 
@@ -69,11 +124,7 @@ Properties:
   VpcId: String
 ```
 
-## Properties
-
-
 ## Example
-
 ```yaml
 mySubnet:
     Type: AWS::EC2::Subnet
@@ -87,6 +138,64 @@ mySubnet:
         Value: bar
 ```
 
+## AutoScalingGroup overview
+
+## Template
+```yaml
+Type: AWS::AutoScaling::AutoScalingGroup
+Properties: 
+  AutoScalingGroupName: String
+  AvailabilityZones: 
+    - String
+  CapacityRebalance: Boolean
+  Cooldown: String
+  DesiredCapacity: String
+  HealthCheckGracePeriod: Integer
+  HealthCheckType: String
+  InstanceId: String
+  LaunchConfigurationName: String
+  LaunchTemplate: 
+    LaunchTemplateSpecification
+  LifecycleHookSpecificationList: 
+    - LifecycleHookSpecification
+  LoadBalancerNames: 
+    - String
+  MaxInstanceLifetime: Integer
+  MaxSize: String
+  MetricsCollection: 
+    - MetricsCollection
+  MinSize: String
+  MixedInstancesPolicy: 
+    MixedInstancesPolicy
+  NewInstancesProtectedFromScaleIn: Boolean
+  NotificationConfigurations: 
+    - NotificationConfiguration
+  PlacementGroup: String
+  ServiceLinkedRoleARN: String
+  Tags: 
+    - TagProperty
+  TargetGroupARNs: 
+    - String
+  TerminationPolicies: 
+    - String
+  VPCZoneIdentifier: 
+    - String
+```
+
+### Properties
+|Properties|Description|
+|---|--------|
+|VPCZoneIdentifier|A list of subnet IDs for a VPC where instances in the Auto Scaling group can be created.|
+|LaunchConfigurationName|The name of the launch configuration to use to launch instances.|
+|DesiredCapacity|The desired capacity is the initial capacity of the Auto Scaling group at the time of its creation.|
+|TargetGroupARNs|One or more ARN of load balancer target groups to associate with the Auto Scaling group.|
+
+### Example
+Access a complete cloudformation template [here](../templates/EC2/EC2_instance_with_VPC_autoscaling_group.yaml)
+
 ## References
 * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-vpc.html
 * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/sample-templates-services-ap-south-1.html#w2ab1c35c30c13c37
+* https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-eip-association.html
+* https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-network-interface.html
+* https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-as-group.html
