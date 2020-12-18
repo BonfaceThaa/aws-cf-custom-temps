@@ -1,0 +1,1111 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS CloudFormation Sample Template VPC_AutoScaling_With_Public_IPs.template.
+Parameters:
+  KeyName:
+    Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  SSHLocation:
+    Description: Lockdown SSH access to the bastion host (default can be accessed from anywhere)
+    Type: String
+    MinLength: '9'
+    MaxLength: '18'
+    Default: 0.0.0.0/0
+    AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
+    ConstraintDescription: must be a valid CIDR range of the form x.x.x.x/x.
+  WebServerInstanceType:
+    Description: WebServer Server EC2 instance type
+    Type: String
+    Default: t2.small
+    AllowedValues:
+      - t1.micro
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - g2.2xlarge
+      - g2.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+      - cg1.4xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  WebServerCount:
+    Description: Number of EC2 instances to launch for the WebServer server
+    Type: Number
+    Default: '1'
+Mappings:
+  SubnetConfig:
+    VPC:
+      CIDR: 10.0.0.0/16
+    Public1:
+      CIDR: 10.0.0.0/24
+    Public2:
+      CIDR: 10.0.1.0/24
+  Region2Examples:
+    ap-east-1:
+      Examples: 'https://s3-ap-east-1.amazonaws.com/cloudformation-examples-ap-east-1'
+    ap-northeast-1:
+      Examples: >-
+        https://s3-ap-northeast-1.amazonaws.com/cloudformation-examples-ap-northeast-1
+    ap-northeast-2:
+      Examples: >-
+        https://s3-ap-northeast-2.amazonaws.com/cloudformation-examples-ap-northeast-2
+    ap-northeast-3:
+      Examples: >-
+        https://s3-ap-northeast-3.amazonaws.com/cloudformation-examples-ap-northeast-3
+    ap-south-1:
+      Examples: 'https://s3-ap-south-1.amazonaws.com/cloudformation-examples-ap-south-1'
+    ap-southeast-1:
+      Examples: >-
+        https://s3-ap-southeast-1.amazonaws.com/cloudformation-examples-ap-southeast-1
+    ap-southeast-2:
+      Examples: >-
+        https://s3-ap-southeast-2.amazonaws.com/cloudformation-examples-ap-southeast-2
+    ca-central-1:
+      Examples: >-
+        https://s3-ca-central-1.amazonaws.com/cloudformation-examples-ca-central-1
+    cn-north-1:
+      Examples: >-
+        https://s3.cn-north-1.amazonaws.com.cn/cloudformation-examples-cn-north-1
+    cn-northwest-1:
+      Examples: >-
+        https://s3.cn-northwest-1.amazonaws.com.cn/cloudformation-examples-cn-northwest-1
+    eu-central-1:
+      Examples: >-
+        https://s3-eu-central-1.amazonaws.com/cloudformation-examples-eu-central-1
+    eu-north-1:
+      Examples: 'https://s3-eu-north-1.amazonaws.com/cloudformation-examples-eu-north-1'
+    eu-west-1:
+      Examples: 'https://s3-eu-west-1.amazonaws.com/cloudformation-examples-eu-west-1'
+    eu-west-2:
+      Examples: 'https://s3-eu-west-2.amazonaws.com/cloudformation-examples-eu-west-2'
+    eu-west-3:
+      Examples: 'https://s3-eu-west-3.amazonaws.com/cloudformation-examples-eu-west-3'
+    me-south-1:
+      Examples: 'https://s3-me-south-1.amazonaws.com/cloudformation-examples-me-south-1'
+    sa-east-1:
+      Examples: 'https://s3-sa-east-1.amazonaws.com/cloudformation-examples-sa-east-1'
+    us-east-1:
+      Examples: 'https://s3.amazonaws.com/cloudformation-examples-us-east-1'
+    us-east-2:
+      Examples: 'https://s3-us-east-2.amazonaws.com/cloudformation-examples-us-east-2'
+    us-west-1:
+      Examples: 'https://s3-us-west-1.amazonaws.com/cloudformation-examples-us-west-1'
+    us-west-2:
+      Examples: 'https://s3-us-west-2.amazonaws.com/cloudformation-examples-us-west-2'
+  AWSInstanceType2Arch:
+    t1.micro:
+      Arch: HVM64
+    t2.nano:
+      Arch: HVM64
+    t2.micro:
+      Arch: HVM64
+    t2.small:
+      Arch: HVM64
+    t2.medium:
+      Arch: HVM64
+    t2.large:
+      Arch: HVM64
+    m1.small:
+      Arch: HVM64
+    m1.medium:
+      Arch: HVM64
+    m1.large:
+      Arch: HVM64
+    m1.xlarge:
+      Arch: HVM64
+    m2.xlarge:
+      Arch: HVM64
+    m2.2xlarge:
+      Arch: HVM64
+    m2.4xlarge:
+      Arch: HVM64
+    m3.medium:
+      Arch: HVM64
+    m3.large:
+      Arch: HVM64
+    m3.xlarge:
+      Arch: HVM64
+    m3.2xlarge:
+      Arch: HVM64
+    m4.large:
+      Arch: HVM64
+    m4.xlarge:
+      Arch: HVM64
+    m4.2xlarge:
+      Arch: HVM64
+    m4.4xlarge:
+      Arch: HVM64
+    m4.10xlarge:
+      Arch: HVM64
+    c1.medium:
+      Arch: HVM64
+    c1.xlarge:
+      Arch: HVM64
+    c3.large:
+      Arch: HVM64
+    c3.xlarge:
+      Arch: HVM64
+    c3.2xlarge:
+      Arch: HVM64
+    c3.4xlarge:
+      Arch: HVM64
+    c3.8xlarge:
+      Arch: HVM64
+    c4.large:
+      Arch: HVM64
+    c4.xlarge:
+      Arch: HVM64
+    c4.2xlarge:
+      Arch: HVM64
+    c4.4xlarge:
+      Arch: HVM64
+    c4.8xlarge:
+      Arch: HVM64
+    g2.2xlarge:
+      Arch: HVMG2
+    g2.8xlarge:
+      Arch: HVMG2
+    r3.large:
+      Arch: HVM64
+    r3.xlarge:
+      Arch: HVM64
+    r3.2xlarge:
+      Arch: HVM64
+    r3.4xlarge:
+      Arch: HVM64
+    r3.8xlarge:
+      Arch: HVM64
+    i2.xlarge:
+      Arch: HVM64
+    i2.2xlarge:
+      Arch: HVM64
+    i2.4xlarge:
+      Arch: HVM64
+    i2.8xlarge:
+      Arch: HVM64
+    d2.xlarge:
+      Arch: HVM64
+    d2.2xlarge:
+      Arch: HVM64
+    d2.4xlarge:
+      Arch: HVM64
+    d2.8xlarge:
+      Arch: HVM64
+    hi1.4xlarge:
+      Arch: HVM64
+    hs1.8xlarge:
+      Arch: HVM64
+    cr1.8xlarge:
+      Arch: HVM64
+    cc2.8xlarge:
+      Arch: HVM64
+  AWSInstanceType2NATArch:
+    t1.micro:
+      Arch: NATHVM64
+    t2.nano:
+      Arch: NATHVM64
+    t2.micro:
+      Arch: NATHVM64
+    t2.small:
+      Arch: NATHVM64
+    t2.medium:
+      Arch: NATHVM64
+    t2.large:
+      Arch: NATHVM64
+    m1.small:
+      Arch: NATHVM64
+    m1.medium:
+      Arch: NATHVM64
+    m1.large:
+      Arch: NATHVM64
+    m1.xlarge:
+      Arch: NATHVM64
+    m2.xlarge:
+      Arch: NATHVM64
+    m2.2xlarge:
+      Arch: NATHVM64
+    m2.4xlarge:
+      Arch: NATHVM64
+    m3.medium:
+      Arch: NATHVM64
+    m3.large:
+      Arch: NATHVM64
+    m3.xlarge:
+      Arch: NATHVM64
+    m3.2xlarge:
+      Arch: NATHVM64
+    m4.large:
+      Arch: NATHVM64
+    m4.xlarge:
+      Arch: NATHVM64
+    m4.2xlarge:
+      Arch: NATHVM64
+    m4.4xlarge:
+      Arch: NATHVM64
+    m4.10xlarge:
+      Arch: NATHVM64
+    c1.medium:
+      Arch: NATHVM64
+    c1.xlarge:
+      Arch: NATHVM64
+    c3.large:
+      Arch: NATHVM64
+    c3.xlarge:
+      Arch: NATHVM64
+    c3.2xlarge:
+      Arch: NATHVM64
+    c3.4xlarge:
+      Arch: NATHVM64
+    c3.8xlarge:
+      Arch: NATHVM64
+    c4.large:
+      Arch: NATHVM64
+    c4.xlarge:
+      Arch: NATHVM64
+    c4.2xlarge:
+      Arch: NATHVM64
+    c4.4xlarge:
+      Arch: NATHVM64
+    c4.8xlarge:
+      Arch: NATHVM64
+    g2.2xlarge:
+      Arch: NATHVMG2
+    g2.8xlarge:
+      Arch: NATHVMG2
+    r3.large:
+      Arch: NATHVM64
+    r3.xlarge:
+      Arch: NATHVM64
+    r3.2xlarge:
+      Arch: NATHVM64
+    r3.4xlarge:
+      Arch: NATHVM64
+    r3.8xlarge:
+      Arch: NATHVM64
+    i2.xlarge:
+      Arch: NATHVM64
+    i2.2xlarge:
+      Arch: NATHVM64
+    i2.4xlarge:
+      Arch: NATHVM64
+    i2.8xlarge:
+      Arch: NATHVM64
+    d2.xlarge:
+      Arch: NATHVM64
+    d2.2xlarge:
+      Arch: NATHVM64
+    d2.4xlarge:
+      Arch: NATHVM64
+    d2.8xlarge:
+      Arch: NATHVM64
+    hi1.4xlarge:
+      Arch: NATHVM64
+    hs1.8xlarge:
+      Arch: NATHVM64
+    cr1.8xlarge:
+      Arch: NATHVM64
+    cc2.8xlarge:
+      Arch: NATHVM64
+  AWSRegionArch2AMI:
+    af-south-1:
+      HVM64: ami-064cc455f8a1ef504
+      HVMG2: NOT_SUPPORTED
+    ap-east-1:
+      HVM64: ami-f85b1989
+      HVMG2: NOT_SUPPORTED
+    ap-northeast-1:
+      HVM64: ami-0b2c2a754d5b4da22
+      HVMG2: ami-09d0e0e099ecabba2
+    ap-northeast-2:
+      HVM64: ami-0493ab99920f410fc
+      HVMG2: NOT_SUPPORTED
+    ap-northeast-3:
+      HVM64: ami-01344f6f63a4decc1
+      HVMG2: NOT_SUPPORTED
+    ap-south-1:
+      HVM64: ami-03cfb5e1fb4fac428
+      HVMG2: ami-0244c1d42815af84a
+    ap-southeast-1:
+      HVM64: ami-0ba35dc9caf73d1c7
+      HVMG2: ami-0e46ce0d6a87dc979
+    ap-southeast-2:
+      HVM64: ami-0ae99b503e8694028
+      HVMG2: ami-0c0ab057a101d8ff2
+    ca-central-1:
+      HVM64: ami-0803e21a2ec22f953
+      HVMG2: NOT_SUPPORTED
+    cn-north-1:
+      HVM64: ami-07a3f215cc90c889c
+      HVMG2: NOT_SUPPORTED
+    cn-northwest-1:
+      HVM64: ami-0a3b3b10f714a0ff4
+      HVMG2: NOT_SUPPORTED
+    eu-central-1:
+      HVM64: ami-0474863011a7d1541
+      HVMG2: ami-0aa1822e3eb913a11
+    eu-north-1:
+      HVM64: ami-0de4b8910494dba0f
+      HVMG2: ami-32d55b4c
+    eu-south-1:
+      HVM64: ami-08427144fe9ebdef6
+      HVMG2: NOT_SUPPORTED
+    eu-west-1:
+      HVM64: ami-015232c01a82b847b
+      HVMG2: ami-0d5299b1c6112c3c7
+    eu-west-2:
+      HVM64: ami-0765d48d7e15beb93
+      HVMG2: NOT_SUPPORTED
+    eu-west-3:
+      HVM64: ami-0caf07637eda19d9c
+      HVMG2: NOT_SUPPORTED
+    me-south-1:
+      HVM64: ami-0744743d80915b497
+      HVMG2: NOT_SUPPORTED
+    sa-east-1:
+      HVM64: ami-0a52e8a6018e92bb0
+      HVMG2: NOT_SUPPORTED
+    us-east-1:
+      HVM64: ami-032930428bf1abbff
+      HVMG2: ami-0aeb704d503081ea6
+    us-east-2:
+      HVM64: ami-027cab9a7bf0155df
+      HVMG2: NOT_SUPPORTED
+    us-west-1:
+      HVM64: ami-088c153f74339f34c
+      HVMG2: ami-0a7fc72dc0e51aa77
+    us-west-2:
+      HVM64: ami-01fee56b22f308154
+      HVMG2: ami-0fe84a5b4563d8f27
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: !FindInMap 
+        - SubnetConfig
+        - VPC
+        - CIDR
+      EnableDnsSupport: 'true'
+      EnableDnsHostnames: 'true'
+      Tags:
+        - Key: Application
+          Value: !Ref 'AWS::StackId'
+        - Key: Network
+          Value: Public
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+  PublicSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap 
+        - SubnetConfig
+        - Public1
+        - CIDR
+      AvailabilityZone: !Select 
+        - 0
+        - !GetAZs ''
+      Tags:
+        - Key: Application
+          Value: !Ref 'AWS::StackId'
+        - Key: Network
+          Value: Public
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 5202051e-68a4-4a52-aee0-3d31fd37d613
+  PublicSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap 
+        - SubnetConfig
+        - Public2
+        - CIDR
+      AvailabilityZone: !Select 
+        - 1
+        - !GetAZs ''
+      Tags:
+        - Key: Application
+          Value: !Ref 'AWS::StackId'
+        - Key: Network
+          Value: Public
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 89922bcd-c9f5-4f34-affd-7e2f7ca00351
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Application
+          Value: !Ref 'AWS::StackId'
+        - Key: Network
+          Value: Public
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: eacb210d-9b6e-453f-89ad-6d58f9e4103d
+  GatewayToInternet:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: e90a5ff6-1b1a-4f8b-bf81-edf1652501fc
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Application
+          Value: !Ref 'AWS::StackId'
+        - Key: Network
+          Value: Public
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 94839e5b-a480-4834-b2ed-98f8953fdd97
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: GatewayToInternet
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 44206bb4-ab71-4149-9f2b-52fc2feb783c
+  PublicSubnetRouteTableAssociation1:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: e08c9831-6b4f-4f33-9a8d-0ab88c3497f9
+  PublicSubnetRouteTableAssociation2:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 02ee750c-52b2-4bb1-a8cd-666976efb58c
+  PublicNetworkAcl:
+    Type: 'AWS::EC2::NetworkAcl'
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Application
+          Value: !Ref 'AWS::StackId'
+        - Key: Network
+          Value: Public
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 166e8685-76bf-4621-b3ae-e9b91127dc94
+  InboundHTTPPublicNetworkAclEntry:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '100'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'false'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '80'
+        To: '80'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: d65bc770-ea77-4e3b-bd01-ae14b2adb187
+  InboundDynamicPortPublicNetworkAclEntry:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '101'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'false'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '1024'
+        To: '65535'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 8cc14740-4154-4cd4-ae88-5e0b9f688203
+  InboundSSHPublicNetworkAclEntry:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '102'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'false'
+      CidrBlock: !Ref SSHLocation
+      PortRange:
+        From: '22'
+        To: '22'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 3de5e682-e342-490d-a585-3af9b07f79fc
+  OutboundPublicNetworkAclEntry:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId: !Ref PublicNetworkAcl
+      RuleNumber: '100'
+      Protocol: '6'
+      RuleAction: allow
+      Egress: 'true'
+      CidrBlock: 0.0.0.0/0
+      PortRange:
+        From: '0'
+        To: '65535'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: a63f1e91-4d3d-4bf8-a4a3-cdc655b102ee
+  PublicSubnetNetworkAclAssociation1:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      NetworkAclId: !Ref PublicNetworkAcl
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 5c32626e-7b07-4b7b-a03a-7fee4a4923a9
+  PublicSubnetNetworkAclAssociation2:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      NetworkAclId: !Ref PublicNetworkAcl
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: cecd6bee-d197-4467-bf01-65fbd81122e3
+  PublicApplicationLoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Subnets:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroups:
+        - !Ref PublicLoadBalancerSecurityGroup
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 9cb7a490-33f7-4e10-bec3-256b5088ac79
+  ALBListener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ALBTargetGroup
+      LoadBalancerArn: !Ref PublicApplicationLoadBalancer
+      Port: '80'
+      Protocol: HTTP
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 4139523e-226a-483a-a07b-81a4bba136dd
+  ALBTargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 90
+      HealthCheckTimeoutSeconds: 60
+      HealthyThresholdCount: 3
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 5
+      VpcId: !Ref VPC
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 5fc10f41-7b0c-4f80-8e4e-fdd0870716bc
+  PublicLoadBalancerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Public ELB Security Group with HTTP access on port 80 from the internet
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 0f304126-654c-4789-a810-f54d8f7e84e4
+  WebServerFleet:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    DependsOn: PublicRoute
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      LaunchConfigurationName: !Ref WebServerLaunchConfig
+      MinSize: '1'
+      MaxSize: '10'
+      DesiredCapacity: !Ref WebServerCount
+      TargetGroupARNs:
+        - !Ref ALBTargetGroup
+      Tags:
+        - Key: Network
+          Value: Public
+          PropagateAtLaunch: 'true'
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT45M
+        Count: !Ref WebServerCount
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: '1'
+        MaxBatchSize: '1'
+        PauseTime: PT15M
+        WaitOnResourceSignals: 'true'
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: fa896dd6-74fe-4ed1-9a56-0c33e73aafe2
+  WebServerLaunchConfig:
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Metadata:
+      'AWS::CloudFormation::Init':
+        config:
+          packages:
+            yum:
+              httpd: []
+          files:
+            /var/www/html/index.html:
+              content: !Join 
+                - |+
+
+                - - <img src="
+                  - !FindInMap 
+                    - Region2Examples
+                    - !Ref 'AWS::Region'
+                    - Examples
+                  - /cloudformation_graphic.png" alt="AWS CloudFormation Logo"/>
+                  - >-
+                    <h1>Congratulations, you have successfully launched the AWS
+                    CloudFormation sample.</h1>
+              mode: '000644'
+              owner: root
+              group: root
+            /etc/cfn/cfn-hup.conf:
+              content: !Join 
+                - ''
+                - - |
+                    [main]
+                  - stack=
+                  - !Ref 'AWS::StackId'
+                  - |+
+
+                  - region=
+                  - !Ref 'AWS::Region'
+                  - |+
+
+              mode: '000400'
+              owner: root
+              group: root
+            /etc/cfn/hooks.d/cfn-auto-reloader.conf:
+              content: !Join 
+                - ''
+                - - |
+                    [cfn-auto-reloader-hook]
+                  - |
+                    triggers=post.update
+                  - >
+                    path=Resources.WebServerLaunchConfig.Metadata.AWS::CloudFormation::Init
+                  - 'action=/opt/aws/bin/cfn-init -v '
+                  - '         --stack '
+                  - !Ref 'AWS::StackName'
+                  - '         --resource WebServerLaunchConfig '
+                  - '         --region '
+                  - !Ref 'AWS::Region'
+                  - |+
+
+                  - |
+                    runas=root
+              mode: '000400'
+              owner: root
+              group: root
+          services:
+            sysvinit:
+              httpd:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                  - /etc/httpd/conf.d/aptobackend.conf
+                  - /var/www/html/index.html
+              cfn-hup:
+                enabled: 'true'
+                ensureRunning: 'true'
+                files:
+                  - /etc/cfn/cfn-hup.conf
+                  - /etc/cfn/hooks.d/cfn-auto-reloader.conf
+      'AWS::CloudFormation::Designer':
+        id: 44165eac-8575-496a-a991-218a4faf2759
+    Properties:
+      ImageId: !FindInMap 
+        - AWSRegionArch2AMI
+        - !Ref 'AWS::Region'
+        - !FindInMap 
+          - AWSInstanceType2Arch
+          - !Ref WebServerInstanceType
+          - Arch
+      SecurityGroups:
+        - !Ref WebServerSecurityGroup
+      InstanceType: !Ref WebServerInstanceType
+      KeyName: !Ref KeyName
+      AssociatePublicIpAddress: 'true'
+      UserData: !Base64 
+        'Fn::Join':
+          - ''
+          - - |
+              #!/bin/bash -xe
+            - |
+              yum update -y aws-cfn-bootstrap
+            - |
+              # Install the sample application
+            - '/opt/aws/bin/cfn-init -v '
+            - '    --stack '
+            - !Ref 'AWS::StackId'
+            - '    --resource WebServerLaunchConfig '
+            - '    --region '
+            - !Ref 'AWS::Region'
+            - |+
+
+            - |
+              # Signal copletion
+            - '/opt/aws/bin/cfn-signal -e $? '
+            - '    --stack '
+            - !Ref 'AWS::StackId'
+            - '    --resource WebServerFleet '
+            - '    --region '
+            - !Ref 'AWS::Region'
+            - |+
+
+  WebServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: >-
+        Allow access from load balancer and bastion as well as outbound HTTP and
+        HTTPS traffic
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          SourceSecurityGroupId: !Ref PublicLoadBalancerSecurityGroup
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: !Ref SSHLocation
+    Metadata:
+      'AWS::CloudFormation::Designer':
+        id: 7aba8669-539d-4ea8-a205-becaf0354959
+Outputs:
+  WebSite:
+    Description: URL of the website
+    Value: !Join 
+      - ''
+      - - 'http://'
+        - !GetAtt 
+          - PublicApplicationLoadBalancer
+          - DNSName
+Metadata:
+  'AWS::CloudFormation::Designer':
+    eacb210d-9b6e-453f-89ad-6d58f9e4103d:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 60
+        'y': 840
+      z: 1
+      embeds: []
+    c94b76cc-2cd3-414c-9ca1-24217bdec7b1:
+      size:
+        width: 780
+        height: 690
+      position:
+        x: 60
+        'y': 90
+      z: 1
+      embeds:
+        - 0f304126-654c-4789-a810-f54d8f7e84e4
+        - 7aba8669-539d-4ea8-a205-becaf0354959
+        - 5fc10f41-7b0c-4f80-8e4e-fdd0870716bc
+        - 166e8685-76bf-4621-b3ae-e9b91127dc94
+        - 94839e5b-a480-4834-b2ed-98f8953fdd97
+        - 89922bcd-c9f5-4f34-affd-7e2f7ca00351
+        - 5202051e-68a4-4a52-aee0-3d31fd37d613
+    0f304126-654c-4789-a810-f54d8f7e84e4:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 690
+        'y': 450
+      z: 2
+      parent: c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+      embeds: []
+      iscontainedinside:
+        - c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+    7aba8669-539d-4ea8-a205-becaf0354959:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 300
+        'y': 540
+      z: 2
+      parent: c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+      embeds: []
+      iscontainedinside:
+        - c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+    44165eac-8575-496a-a991-218a4faf2759:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 180
+        'y': 840
+      z: 1
+      embeds: []
+      isassociatedwith:
+        - 7aba8669-539d-4ea8-a205-becaf0354959
+    5fc10f41-7b0c-4f80-8e4e-fdd0870716bc:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 690
+        'y': 570
+      z: 2
+      parent: c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+      embeds: []
+      iscontainedinside:
+        - c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+    166e8685-76bf-4621-b3ae-e9b91127dc94:
+      size:
+        width: 330
+        height: 330
+      position:
+        x: 90
+        'y': 150
+      z: 2
+      parent: c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+      embeds:
+        - a63f1e91-4d3d-4bf8-a4a3-cdc655b102ee
+        - 3de5e682-e342-490d-a585-3af9b07f79fc
+        - 8cc14740-4154-4cd4-ae88-5e0b9f688203
+        - d65bc770-ea77-4e3b-bd01-ae14b2adb187
+      iscontainedinside:
+        - c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+    a63f1e91-4d3d-4bf8-a4a3-cdc655b102ee:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 120
+        'y': 210
+      z: 3
+      parent: 166e8685-76bf-4621-b3ae-e9b91127dc94
+      embeds: []
+      iscontainedinside:
+        - 166e8685-76bf-4621-b3ae-e9b91127dc94
+    3de5e682-e342-490d-a585-3af9b07f79fc:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 240
+        'y': 210
+      z: 3
+      parent: 166e8685-76bf-4621-b3ae-e9b91127dc94
+      embeds: []
+      iscontainedinside:
+        - 166e8685-76bf-4621-b3ae-e9b91127dc94
+    8cc14740-4154-4cd4-ae88-5e0b9f688203:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 120
+        'y': 330
+      z: 3
+      parent: 166e8685-76bf-4621-b3ae-e9b91127dc94
+      embeds: []
+      iscontainedinside:
+        - 166e8685-76bf-4621-b3ae-e9b91127dc94
+    d65bc770-ea77-4e3b-bd01-ae14b2adb187:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 240
+        'y': 330
+      z: 3
+      parent: 166e8685-76bf-4621-b3ae-e9b91127dc94
+      embeds: []
+      iscontainedinside:
+        - 166e8685-76bf-4621-b3ae-e9b91127dc94
+    94839e5b-a480-4834-b2ed-98f8953fdd97:
+      size:
+        width: 240
+        height: 240
+      position:
+        x: 480
+        'y': 150
+      z: 2
+      parent: c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+      embeds:
+        - 44206bb4-ab71-4149-9f2b-52fc2feb783c
+      iscontainedinside:
+        - c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+    e90a5ff6-1b1a-4f8b-bf81-edf1652501fc:
+      source:
+        id: c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+      target:
+        id: eacb210d-9b6e-453f-89ad-6d58f9e4103d
+    44206bb4-ab71-4149-9f2b-52fc2feb783c:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 510
+        'y': 210
+      z: 3
+      parent: 94839e5b-a480-4834-b2ed-98f8953fdd97
+      embeds: []
+      isassociatedwith:
+        - eacb210d-9b6e-453f-89ad-6d58f9e4103d
+      iscontainedinside:
+        - 94839e5b-a480-4834-b2ed-98f8953fdd97
+      dependson:
+        - e90a5ff6-1b1a-4f8b-bf81-edf1652501fc
+    89922bcd-c9f5-4f34-affd-7e2f7ca00351:
+      size:
+        width: 150
+        height: 150
+      position:
+        x: 90
+        'y': 540
+      z: 2
+      parent: c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+      embeds: []
+      iscontainedinside:
+        - c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+    cecd6bee-d197-4467-bf01-65fbd81122e3:
+      source:
+        id: 166e8685-76bf-4621-b3ae-e9b91127dc94
+      target:
+        id: 89922bcd-c9f5-4f34-affd-7e2f7ca00351
+    02ee750c-52b2-4bb1-a8cd-666976efb58c:
+      source:
+        id: 94839e5b-a480-4834-b2ed-98f8953fdd97
+      target:
+        id: 89922bcd-c9f5-4f34-affd-7e2f7ca00351
+    5202051e-68a4-4a52-aee0-3d31fd37d613:
+      size:
+        width: 150
+        height: 150
+      position:
+        x: 480
+        'y': 450
+      z: 2
+      parent: c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+      embeds: []
+      iscontainedinside:
+        - c94b76cc-2cd3-414c-9ca1-24217bdec7b1
+    fa896dd6-74fe-4ed1-9a56-0c33e73aafe2:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 300
+        'y': 840
+      z: 1
+      embeds: []
+      isassociatedwith:
+        - 44165eac-8575-496a-a991-218a4faf2759
+        - 5fc10f41-7b0c-4f80-8e4e-fdd0870716bc
+      iscontainedinside:
+        - 5202051e-68a4-4a52-aee0-3d31fd37d613
+        - 89922bcd-c9f5-4f34-affd-7e2f7ca00351
+      dependson:
+        - 44206bb4-ab71-4149-9f2b-52fc2feb783c
+    9cb7a490-33f7-4e10-bec3-256b5088ac79:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 420
+        'y': 840
+      z: 1
+      embeds: []
+      isassociatedwith:
+        - 0f304126-654c-4789-a810-f54d8f7e84e4
+      iscontainedinside:
+        - 5202051e-68a4-4a52-aee0-3d31fd37d613
+        - 89922bcd-c9f5-4f34-affd-7e2f7ca00351
+    4139523e-226a-483a-a07b-81a4bba136dd:
+      size:
+        width: 60
+        height: 60
+      position:
+        x: 540
+        'y': 840
+      z: 1
+      embeds: []
+    5c32626e-7b07-4b7b-a03a-7fee4a4923a9:
+      source:
+        id: 166e8685-76bf-4621-b3ae-e9b91127dc94
+      target:
+        id: 5202051e-68a4-4a52-aee0-3d31fd37d613
+    e08c9831-6b4f-4f33-9a8d-0ab88c3497f9:
+      source:
+        id: 94839e5b-a480-4834-b2ed-98f8953fdd97
+      target:
+        id: 5202051e-68a4-4a52-aee0-3d31fd37d613
